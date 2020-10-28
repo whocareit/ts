@@ -155,7 +155,49 @@ myArray = ["Bob", "fred"];
 
 let myStr: string = myArray[0];
 
-在这个例子中，定义了
+在这个例子中，定义了StringArray接口，它具有索引签名，这个签名表示了当前
+number去索引StirngArray时会等到string类型的返回值。
+
+* ts所支持的两种索引签名：字符串和数字。可以使用两种类型的索引，但是
+数字索引的返回值必须是字符串索引返回值类型的子类型。原因是因为当前使用
+number来索引时，js会将他转化成string然后再去索引对象。也就是说用
+100（一个number）去索引等同于使用‘100’这个字符串去索引，因此两者需要保持一致。
+如：
+class Animal {
+    name: string;
+}
+class Dog extends Animal {
+    breed: string;
+}
+
+字符串索引签名能够很好的秒速dictionary模式，并且它们会与其返回值类型
+相匹配。因为字符串索引声明了obj.property和obj["property"]两种形式都可以。
+下面的例子中，name的类型与字符串索引类型不匹配。所以类型检查器给出一个
+错误提示：
+interface NumberDictionary {
+    [index: string]: number;
+    length: number;
+}
+
+最后可以给索引签名设置制度，这样就防止了给索引赋值；
+interface ReadonlyStringArray {
+    readonly [index: number]: string;
+}
+let myArray: ReadonlyStringArray = ["Alice", "Bob"];
+
+## 类类型
+1. 实现接口，实现接口方式，ts能够用来明确的强制一个类去符合某种契约
+interface ClockInterface {
+    currentTime: Date;
+}
+
+class Clock implements ClockInterface {
+    currentTime: Date;
+    constructor(h: number, m: number){ }
+}
+
+
+
 
 
 
