@@ -8,6 +8,9 @@
 3. 最后在命令行上，运行TypeScript的代码，采用命令行tsc 文件名.ts
 * 使用的作用： 将ts的代码转化为js代码运行在前端的代码当中
  
+## ts中自动监控代码的方式
+1. tsc --init
+2. 将自动的配置文件tsconfig.js中的outiDir的默认值改为：‘./js’
 ## 基础数据类型
 1. 布尔值（boolean）
     * let isDone: boolean = false;
@@ -34,6 +37,35 @@ let c: Color = Color.Green
     notSure = `maybe a string instead`;
     notSure = false;
 8. void （无类型）与any类型相反，表示没有任何一个数据类型
+* 声明一个void类型的变量没有什么作用，因为其只能赋undefined
+9. Null 和 Undefined
+* 这两种赋值都只能给定对应的值类型
+10. nerver 数据类型
+* 其表示永远不存在的值类型。
+* never类型任何类型类型的子类型，可以赋值给任何类型；然而没有类型是never的子类型或可以赋值给
+11. never类型(除了never本身之外)
+```
+//返回never；类型的函数
+// 返回never的函数必须存在无法达到的点，即报错表示的含义就为无法达到的点
+function error(message: string): never {
+    throw new Error(message);
+}
+// console.log(error('抛出异常'));
+
+//推断的返回值类型为never
+function fail(){
+    return error("failed");
+}
+// fail();
+
+//死循环
+function infiniteLoop(): never {
+    while(true){
+
+    }
+}
+console.log(infiniteLoop);
+```
 
 ## 变量声明
 1. var
