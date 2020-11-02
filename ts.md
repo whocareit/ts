@@ -77,10 +77,11 @@ function f([first, second]: [nunber, number]){
     console.log(second);
 }
 5. 对象解构中的默认值
-默认值可以让你在属性的undefined时使用缺省值：
+* 默认值可以让你在属性的undefined时使用缺省值：
 如：function keepWholeObject(wholeObject: {a: string, b?: number}){
     let { a, b = 1001 } = wholeObject;
 }
+此时的b?所代表的含义为缺省值的意思
 
 ## 接口
 1. 接口的简单使用
@@ -95,7 +96,7 @@ printLabel(myObj);
 有一个名为label类型的string。对于传入的对象参数，实际上会包含很多属性，但是编译器
 只会检查必须的属性是否存在，并且其类型是否匹配。
 
-使用接口来描述上述内容
+2. 使用接口来描述上述内容,使用关键字interface
 interface LabelledValue {
     label: string;
 }
@@ -125,6 +126,7 @@ function createSquare(config: SquareConfig):{color: string; areaL: number}{
     return newsSquare;
 }
 let mySquare = createSquare({color: "black"});
+在这个模型中?所要表示的含义就是可选的
 
 ### 可选属性的好处：
 * 对可能存在的属性进行预定义
@@ -149,6 +151,8 @@ interface SquareConfig {
     width?: number;
     [propName: string]: any;
 }
+* 属性检查
+
 
 ### 函数类型
 接口能够描述js对象拥有的各种个样的外形。除了描述带有属性的普通对象外没，
