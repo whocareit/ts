@@ -150,9 +150,156 @@ console.log('监控ts');
 // ro[1] = 100; error 报错的原因是因为该数组为readonly
 
 //表示一个接口可以具有任意数量的属性
-interface SquareConfig  {
-    color?: string;
-    width?: number;
-    [propName: string]: any;
-}
+// interface SquareConfig  {
+//     color?: string;
+//     width?: number;
+//     [propName: string]: any;
+// }
 
+//fanxing接口
+// interface Gene {
+//     <T>(arg: T): T;
+// }
+// function identity<T>(arg: T): T {
+//     return arg;
+// }
+
+// let myIdentity: Gene = identity;
+// console.log(myIdentity)
+// class GenericNumber<T> {
+//     public zeroValue: T;
+//     public add: (x: T, y: T) => T;
+//     constructor(){
+
+//     }
+// }
+// let my = new GenericNumber<number>();
+// my.zeroValue = 0;
+// my.add = (x, y) => (x + y);
+// console.log(my)
+// interface LengthWise {
+//     length: number;
+// }
+// function loggingIdentity<T extends LengthWise>(args: T): T {
+//     console.log(args.length);
+//     return args;
+// }
+// console.log(loggingIdentity('123'))
+// function getProperty(obj: T, key: K) {
+//     return obj[key];
+// }
+
+// let x = { a: 1, b: 2, c: 3, d: 4 };
+
+// getProperty(x, "a");
+// type Easing = "ease-in" | "ease-out" | "ease-in-out";
+// class UIElement {
+//     animate(dx: number, dy: number, easing: Easing){
+//         if(easing === "ease-in"){
+//             console.log(dx+dy,easing);
+//         }else if(easing == "ease-out"){
+//             console.log(dx-dy,easing)
+//         }else{
+//             console.log(dx,dy,easing)
+//         }
+//     }
+// }
+// const element = new UIElement();
+// element.animate(0, 0, 'ease-in');
+//element.animate(10,10, 'uneasy'); //此时会出现报错，原因是因为此时所传入的字符串在Easing中并没有定义
+
+// function rollDice(): 1 | 2 | 3 | 4 | 5 | 6 {
+//     return (Math.floor(Math.random() * 6) + 1) as 1 | 2;
+// }
+// const result = rollDice();
+// console.log(result);
+
+// function padLeft(value: string, padding: any){
+//     if(typeof padding === "number") {
+//         return Array(padding + 1).join(" ") + value;
+//     }
+//     if(typeof padding == "string") {
+//         return padding + value;
+//     }
+//     throw new Error(`Expected string or number, got ${padding} .`);
+// }
+// console.log(padLeft("hello world", []))
+// enum Direction {
+//     Up = 1,
+//     Down,
+//     Left,
+//     right
+// }
+// console.log(Direction.Up)
+// enum Res {
+//     No = 0 ,
+//     Yes = 1,
+// }
+// function respond (recipient: string, message: Res):void {
+//     console.log(recipient, message)
+// }
+// respond("Princess Caroline", Res.Yes)
+
+// enum Direction {
+//     Up = "up",
+//     Down = "down",
+//     Left = "left",
+//     Right = "right"
+// }
+// console.log(Direction.Up)
+
+// enum BooleanLikeHeterogeneousEnum {
+//     No = 0,
+//     Yes = "YES",
+// }
+// console.log(BooleanLikeHeterogeneousEnum)
+
+// enum FileAccess {
+//     None,
+//     Read   = 1 << 1,
+//     Write  = 1 << 2,
+//     ReadWrite = Read | Write,
+//     G = '123'.length
+// }
+// console.log(FileAccess.ReadWrite,FileAccess.Read,FileAccess.Write)
+
+// enum ShapeKind {
+//     Circle,
+//     Square
+// }
+
+// interface Circle {
+//     kind: ShapeKind.Circle;
+//     radius: number;
+// }
+
+// interface Square {
+//     kind: ShapeKind.Square;
+//     sideLength: number;
+// }
+
+// let c: Circle = {
+//     kind: ShapeKind.Circle,
+//     radius: 10
+// }
+// console.log(c)
+
+// enum Enum {
+//     A
+// }
+// let a = Enum.A;
+// let nameOfA = Enum[a];
+// console.log(a, nameOfA)
+
+// const enum Enum {
+//     A = 1,
+//     B = A * 2
+// }
+// console.log(Enum.A)
+
+declare enum Enum {
+    A = 1,
+    B,
+    C = 2
+}
+// console.log(Enum.B)

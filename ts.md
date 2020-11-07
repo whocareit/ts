@@ -232,7 +232,189 @@ class Clock implements ClockInterface {
     constructor(h: number, m: number){ }
 }
 
+## 泛型类型
+1. 泛型类型的声明方式：
+```
+    function identity<T>(arg: T):T {
+        return arg;
+    }
+    let myIdentity: <T>(arg: T) => T = identity;
 
+    interface Gene {
+    <T>(arg: T): T;
+}
+    function identity<T>(arg: T): T {
+        return arg;
+    }
+
+    let myIdentity: Gene = identity;
+```
+此时的myIdentity就是泛型类型
+2. 泛型接口：使用interface关键字
+命名方式如下：
+```
+    interface Gen {
+        <T>(arg: T): T
+    }
+```
+3. 泛型类：使用class关键字
+* 命名方式：在类名称之后使用<>，整个就表示泛型
+```
+class GenericNumber<T> {
+    zeroValue: T;
+    add: (x: T, y: T) => T;
+    constructor(zeroValue: T,add: (x: T, y: T) => T) {
+        this.zeroValue = zeroValue;
+        this.add = add;
+    }
+}
+let my = new GenericNumber<number>(0, (x, y) => (x + y));
+console.log(my.add(3,5))
+```
+4. 泛型约束
+```
+interface LengthWise {
+    length: number;
+}
+function loggingIdentity<T extends LengthWise>(args: T): T {
+    console.log(args.length);
+    return args;
+}
+console.log(loggingIdentity('123'))
+```
+* 在上面的这个案例中由于在接口中定义了约束，因此它就对一些类型不适用了，例如number类型等
+* 在约束中去使用类型参数
+
+## 文字类型
+* 在ts中文字类型包括下面的三种类型：string number boolean
+* 但是在使用时，要么全部是字符串或者全部是数字类型或者全部是布尔值
+```
+class UIElement {
+    animate(dx: number, dy: number, easing: Easing){
+        if(easing === "ease-in"){
+            console.log(dx+dy,easing);
+        }else if(easing == "ease-out"){
+            console.log(dx-dy,easing)
+        }else{
+            console.log(dx,dy,easing)
+        }
+    }
+}
+const element = new UIElement();
+element.animate(0, 0, 'ease-in');
+//element.animate(10,10, 'uneasy'); //此时会出现报错，原因是因为此时所传入的字符串在Easing中并没有定义
+```
+## 枚举
+1. 定义方式： 使用enmu关键字，中间的分隔符按照逗号来进行划分
+2. 数字枚举： 其本身具有字增属性
+```
+//案例1
+enum Direction {
+    Up = 1,
+    Down,
+    Left,
+    right
+}
+console.log(Direction.Up)
+//案例2
+enum Res {
+    No = 0 ,
+    Yes = 1,
+}
+function respond (recipient: string, message: Res):void {
+    console.log(recipient, message)
+}
+respond("Princess Caroline", Res.Yes)
+```
+3. 字符串枚举
+* 定义： 🇺每个成员都必须使用字符串字面量，或另外一个字符串枚举成员进行初始化
+* 优势： 字符串枚举没有自增长的行为，字符串枚举可以很好的序列化。
+```
+enum Direction {
+    Up = "up",
+    Down = "down",
+    Left = "left",
+    Right = "right"
+}
+console.log(Direction.Up)
+```
+4. 异构枚举
+从技术的角度来说，美剧可以混合字符串和数字成员，通常不建议这样来做
+```
+enum BooleanLikeHeterogeneousEnum {
+    No = 0,
+    Yes = "YES",
+}
+console.log(BooleanLikeHeterogeneousEnum)
+```
+5. 计算的和常量成员
+每一个枚举都一个值，可以是常量或计算出来的。
+* 满足下面的这些情况时，枚举成员被当作常量：
+    * 是枚举的第一个成员并且美欲呕初始化器时，这种情况下，初始值为0
+    * 当前枚举成员是一个数字常量，当前枚举成员的值为它上一个枚举成员的值加1
+    * 枚举成员使用常量枚举表达式初始化
+```
+enum FileAccess {
+    None,
+    Read   = 1 << 1,
+    Write  = 1 << 2,
+    ReadWrite = Read | Write,
+    G = '123'.length
+}
+console.log(FileAccess.ReadWrite,FileAccess.Read,FileAccess.Write)
+```
+* 在上面的例子中，<<表示右移，右边的数，表示右移的位数。 ｜表示求异或(相同为0不同为1)
+6. 联合枚举与枚举成员的类型
+* 存在的一种特殊的非计算的常量枚举成员的子集：字面量枚举成员。字面量枚举成员指不带有初始值的常量枚举成员，或者是值被初始化为：
+    * 任何字符串字面量 (例如： “foo”, "bar", "baz")
+    * 任何数字字面量 (例如：1,100)
+    * 应用了一元 - 符号的数字字面量（例如： -1, -100）
+```
+enum ShapeKind {
+    Circle,
+    Square
+}
+
+interface Circle {
+    kind: ShapeKind.Circle;
+    radius: number;
+}
+
+interface Square {
+    kind: ShapeKind.Square;
+    sideLength: number;
+}
+
+let c: Circle = {
+    kind: ShapeKind.Circle,
+    radius: 10
+}
+console.log(c)
+```
+7. 反向映射
+对于数字枚举成员来说，七还具有反向映射，从枚举值到枚举成员
+8. const枚举
+* 出现的意义：为了避免在额外生成的代码上的开销和额外的非直接的对枚举成员的访问，需要用常量枚举。常量枚举通过在枚举上使用const修饰符来定义。
+```
+const enum Enum {
+    A = 1,
+    B = A * 2
+}
+console.log(Enum.A)
+```
+* 常量枚举只能使用常量枚举表达式，并且不同于常规的枚举，他们在编译阶段会被删除。
+9. 外部枚举
+* 外部枚举用来描述已经存在的枚举类型的形状
+* 使用declare 关键字
+```
+declare enum Enum {
+    A = 1,
+    B,
+    C = 2
+}
+```
+外部枚举和非外部枚举之间有个重要的区别，在正常的枚举中，没有初始化方法的成员被当作成常数成员。
+对于非常数的外部枚举而言，没有初始化方法时被当作需要经过计算的
 
 
 
