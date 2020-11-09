@@ -440,8 +440,89 @@ type k3 = keyof { [x: string]: person }; // string | number
 * N-Number
 * V-Value
 * R-Return // 表示返回值
+## 类型推论
+1. 介绍: 在没有明确指明出类型的地方，类型推论会帮助提供类型
+### 最佳通用类型
+* 当需要从几个表达式中推断类型时，会使用一些表达式来推断出一个最合适的通用类型。
+```
+let x = [0, 1, null]
+//从当前这个表达式中，会考虑到所有元素的类型，上面有两种类型，这里有两种选择：number || null。计算通用类型算法会考虑所有的候选类型，并给出一个兼容所有候选类型的类型
+```
+```
+let zoo = [new Rhino(), new Elephant(), new Snake()];
+//在这个例子中，想要zoo被推断为Animal类型，但是这个数组中没有对象是Animal类型的，因此不能推断出结果。因此为了更正，当候选类型不能使用时，需要明确的指出类型
+```
+### 上下文类型
+* ts类型推论可能按照相反的方向进行，这种被称之为“按照上下文归类”。上下文归类会发生在表达式的类型与所处的位置相关时，如：
+```
+window.onmousedown = function(mouseEvent){
+    console.log(mouseEvent.button);
+}
+//会发生错误：原因是因为ts类型检查器使用window.onmousedown函数的类型来推断右边函数表达式的类型。因此，就能推断出mouseEvent参数的类型。如果函数表达式不在上下文类型的位置，mouseEvent参数的类型需要制指定any
+```
+## 类型兼容性
+1. 介绍：ts里的类型兼容性，是基于结构子类型。结构类型是一种只使用其成员来描述类型的方式
+```
+interface Named {
+    name: string;
+}
+class Person {
+    name: string;
+}
+let p: Named;
+p = new Person();
+//这段代码不会报错，原因是因为ts的结构性子类型是根据js代码的典型写法来设计的
+```
+2. 类型兼容性基本规则：如果x想要兼容y，那么y至少具有与x相同的属性。
+```
+interface Named {
+    name: string;
+}
+let x: Named;
+let y = { name: "Alice", location: "Seattle"};
+x = y;
+//在这种赋值的规则中，编译器检查x中的每个属性，看了在y中能找到对应的属性，因此这个赋值过程是正确的
+```
+3. 比较两个函数
+在赋值的过程中需要去对比各自的参数，如果参数多就是正确的，参数少就是错误的
+```
+let x = (a: number) => 0;
+let y = (b: number, s: string) => 0;
+y = x; //正确
+x = y; //error
+```
+4. 尽量减少一些不必要的参数的使用
+```
+let items = [1, 2, 3];
 
+// Don't force these extra arguments
+items.forEach((item, index, array) => console.log(item));
 
+// Should be OK!
+items.forEach((item) => console.log(item));
+
+//对于上面的这种情况，在定义参数的时候，尽量去避免定义但没有使用的对象
+```
+5. 泛型
+* ts是结构性的类型系统，类型参数只影响使用其作为类型一部分是的结果类型。
+```
+interface Empty<T> {
+
+}
+let x: Empty<number>;
+let y: Empty<string>;
+x = y;
+//这个例子不会报错，原因是因为x和y是兼容的，他们的结构使用类型参数并没有什么不同
+```
+```
+interface NotEmpty<T> {
+    data: T;
+}
+let x: NotEmpty<number>;
+let y: NotEmpty<string>;
+x = y;
+//在这里会报错，原因是因为x和y不是兼容的
+```
 
 
 
