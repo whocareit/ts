@@ -415,8 +415,31 @@ declare enum Enum {
 ```
 外部枚举和非外部枚举之间有个重要的区别，在正常的枚举中，没有初始化方法的成员被当作成常数成员。
 对于非常数的外部枚举而言，没有初始化方法时被当作需要经过计算的
-
-
+## keyof
+* 在ts中允许我们遍历某种属性，并通过keyof操作符提取其属性的名称.该操作符可以用于获取某种类型
+的所有键，其返回类型是联合类型
+```
+interface Person {
+    name: string;
+    age: number;
+    location: string;
+}
+```
+type k1 = keyof Person; // "name" | "age" | "location" 
+type k2 = keyof Person[]; // number | "length"等
+type k3 = keyof { [x: string]: person }; // string | number
+* keyof操作符除了支持接口和类外，也支持基本数据类型
+## ?.运算符
+1. 含义：可选链操作符，可以理解为防止undefined情况
+2. 与之对应的!.运算符，知道所要调用的值为切确的
+## ts中泛型里面使用T R K N T S V等
+1. 含义：本身上是随便使用的，不具有任何的意义，但大多数都是按照一定的约定来说。
+* E-Element
+* K-Key
+* T-type
+* N-Number
+* V-Value
+* R-Return // 表示返回值
 
 
 
