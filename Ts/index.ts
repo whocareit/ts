@@ -242,3 +242,77 @@
 //     firstName:'li',
 //     secondName: 'si'
 // }))
+
+//函数类型接口
+// interface encript {
+//     (key: string,value: string):string;
+// }
+// const md5:encript = function(key: string,  value: string):string {
+//     return key + value;
+// }
+// console.log(md5('zhangsan1','dsdk'));
+
+//可索引接口
+//对数组的约束
+// interface UseArr {
+//     [index: number]: string;
+// }
+
+// const arr:UseArr = ['123','456'];
+// console.log(arr)
+
+// //对于对象的约束
+// interface UseObj {
+//     [index: string]: string;
+// }
+// const obj:UseObj = {name: 'zhang',age: '21'};
+// console.log(obj);
+
+//类类型接口
+// interface Xin{
+//     name: string;
+//     eat(food:string): void;
+// }
+
+// class Dog implements Xin {
+//     name: string;
+//     constructor(name: string){
+//         this.name = name;
+//     }
+//     eat(){
+//         console.log(this.name+ '吃饭')
+//     }
+// }
+// const cat = new Dog('小黑');
+// console.log(cat.eat());
+
+interface M {
+    eat():void;
+}
+interface T extends M {
+    work():void;
+}
+
+class Father {
+    name: string;
+    constructor(name: string) {
+        this.name = name;
+    }
+    code():void{
+        console.log(this.name + '写代码');
+    }
+}
+
+class Son extends Father implements T {
+    constructor(name: string){
+        super(name);
+    }
+    eat(){
+        console.log('eat');
+    }
+    work(){
+        console.log('work');
+    }
+}
+const son = new Son('小河');
+son.code();

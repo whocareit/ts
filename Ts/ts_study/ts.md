@@ -320,3 +320,87 @@ console.log(printLabel({
     secondName: 'si'
 }))
 ```
+3. 函数类型接口使用
+* 首先使用interface去定义接口，然后再接口内部定义所要使用的函数，需要传入的参数和其返回值是什么
+```
+interface encript {
+    (key: string,value: string):string;
+}
+const md5:encript = function(key: string,  value: string):string {
+    return key + value;
+}
+console.log(md5('zhangsan1','dsdk'));
+```
+4. 可索引接口：对于数组和对象的约束
+* 对于数组的约束
+```
+interface UseArr {
+    [index: number]: string;
+}
+
+const arr:UseArr = ['123','456'];
+console.log(arr)
+```
+```
+//对于对象的约束
+interface UseObj {
+    [index: string]: string;
+}
+const obj:UseObj = {name: 'zhang',age: '21'};
+console.log(obj);
+```
+5. 类类型接口
+* 使用方式：1. 首先再接口中定义方法和属性  2. 接着在用implements去实现这个接口 3. 接口中所有的方法必须在类中去实现
+```
+interface Xin{
+    name: string;
+    eat(food:string): void;
+}
+
+class Dog implements Xin {
+    name: string;
+    constructor(name: string){
+        this.name = name;
+    }
+    eat(){
+        console.log(this.name+ '吃饭')
+    }
+}
+const cat = new Dog('小黑');
+console.log(cat.eat());
+```
+6. 扩展接口
+* 接口之间可以使用interface关键字来实现他们之间的继承关系
+* 注意当在实现接口时，必须把接口中所有的内容都给继承，包括父接口中的参数
+```
+interface M {
+    eat():void;
+}
+interface T extends M {
+    work():void;
+}
+
+class Father {
+    name: string;
+    constructor(name: string) {
+        this.name = name;
+    }
+    code():void{
+        console.log(this.name + '写代码');
+    }
+}
+
+class Son extends Father implements T {
+    constructor(name: string){
+        super(name);
+    }
+    eat(){
+        console.log('eat');
+    }
+    work(){
+        console.log('work');
+    }
+}
+const son = new Son('小河');
+son.code();
+```
