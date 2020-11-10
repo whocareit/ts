@@ -523,7 +523,556 @@ let y: NotEmpty<string>;
 x = y;
 //在这里会报错，原因是因为x和y不是兼容的
 ```
+## 高级类型
+### 交叉类型
+1. 交叉类型：是将多个类型合并一个类型，这样可以把多种类型叠加在一起成为一种类型，其包含了所需的所有类型的特性。
+2. 使用场景：大多数在混入或其他不适合典型面向对象模型的地方看到交叉类型的使用。
+```
+function extend<T, U>(first: T, second: U): T & U {
+    let result = <T & U>{};
+    for (let id in first){
+        (<any>result[id]) = (<any>first)[id];
+    }
+    for (let id in second){
+        if(!result.hasOwnProperty(id)) {
+            (<any>result)[id] = (<any>result)[id];
+        }
+    }
+    return result;
+}
 
+class Person {
+    constructor(public name: string);
+}
 
+interface Loggable {
+    log(): void;
+}
 
+class ConsoleLogger implements Loggale {
+    log(){
 
+    }
+}
+var jim = extend(new Person("Jim"), new ConsoleLogger());
+var n = jim.name;
+jim.log();
+```
+
+### 联合类型(Union Types)
+1. 使用场景：如遇到number或string类型的参数
+```
+function padLeft(value: string,padding: any) {
+    if (typeof padding == 'number') {
+        return Array(padding + 1).join(" ") + value;
+    }
+    if (typeof padding === "string") {
+        return padding + value;
+    }
+    throw new Error(`Expected string or number, got ${padding} `);
+}
+console.log(padLeft("hello word", 4));
+```
+* 在上面的这种情况时，需要我们传入string或者是number类型，但是由于padding类型被指定为了any，那么在传入padding值时，就算传入一个不是string或者是number类型的参数，ts也不会报错，在编译阶段是能够通过的，但是在运行时会报错。因而代替上面的类型，将any换成以|符号来进行类型兼容。如下所示
+```
+function padLeft(value: string,padding: number | string) {
+    if (typeof padding == 'number') {
+        return Array(padding + 1).join(" ") + value;
+    }
+    if (typeof padding === "string") {
+        return padding + value;
+    }
+    throw new Error(`Expected string or number, got ${padding} `);
+}
+console.log(padLeft("hello word", 123));
+```
+* 联合类型表示一个值可以是几种类型，并且使用｜线来分割每个类型，所以number ｜ string ｜ boolean表示的为一个值可以是number string或boolean
+* 注意，如果一个值是联合类型，如果需要去访问，访问的只能是联合类型的所有类型的共有成员
+```
+interface Bird {
+    fly():void;
+    layEggs():void;
+}
+
+interface Fish {
+    swim(): void;
+    layEggs(): void;
+}
+function getSmakllPet(): Fish | Bird {
+    //
+}
+let pet = getSmakllPet();
+pet.layEggs(); // okay
+pet.swim();    // errors
+```
+* 在上面的例子中，因为layEggs()所以能够访问，另外的不能被访问，原因是因为它们不是公有的，只存在单独的属性当中
+### 类型保护与区分类型
+* 对于上述所说的联合类型，如果要区分2个可能值是否是所在的成员中的检测方法，就需要去使用类型断言。
+```
+interface Bird {
+    fly():void;
+    layEggs():void;
+}
+
+interface Fish {
+    swim(): void;
+    layEggs(): void;
+}
+function getSmakllPet(): Fish | Bird {
+    //
+}
+let pet = getSmakllPet();
+
+if ((<Fish>pet).swim) {
+    (<Fish>pet).swim();
+}else {
+    (<Bird>pet).fly();
+}
+```
+* 在当前的这个类型中<Fish>pet.swim所表示的含义为判断该方法中是否有该接口中所定义的方法
+1. 用户自定义的类型保护
+* 描述：类型保护就是一些表达式，会在运行时检查以确保在某个作用域里的类型。
+* 形式： 类型保护，只需要简单的定义一个函数，它的返回值是一个类型谓词
+```
+interface Bird {
+    fly():void;
+    layEggs():void;
+}
+
+interface Fish {
+    swim(): void;
+    layEggs(): void;
+}
+
+function isFish(pet: Fish | Bird): pet is Fish {
+    return (<Fish>pet).swim !== undefined;
+}
+```
+* 类型谓词：其形式为paramentName is Type形式， paramentName必须是来自于当前函数签名里的一个参数名
+2. typeof类型保护
+```
+function isNumber(x: any): x is number {
+    return typeof x === 'number';
+}
+
+function isString(y: any): y is string {
+    return typeof y === 'string';
+}
+
+function padLeft(value: string, padding: string | number) {
+    if (isNumber(padding)) {
+        return Array(padding + 1).join(" ") + value;
+    }
+    if (isString(padding)) {
+        return padding + value;
+    }
+    throw new Error(`Expected string or number, got ${padding} `)
+}
+```
+* 在这个例子中存在一个弊端，需要定义函数或者直接通过typeof来对类型进行判断。typeof类型保护只有良种化形式能够被识别 typeof v === "typename" 或者是 typeof v !== "typename".其中typename必须是number string boolean symbol。只有这几种类型才能受到保护
+3. instanceof类型保护
+```
+interface Padder {
+    getPaddingString(): string;
+}
+
+class SpaceRepeatingPadder implements Padder {
+    constructor(private numSpaces: number) {}
+    getPaddingString(){
+        return Array(this.numSpaces + 1).join(" ");
+    }
+}
+
+class StringPadder implements Padder {
+    constructor(private value: string) {}
+    getPaddingString() {
+        return this.value;
+    }
+}
+
+function getRandomPadder() {
+    return Math.random() < 0.5 ?
+    new SpaceRepeatingPadder(4) : 
+    new StringPadder(" ");
+}
+
+//此时为SpaceRepeatingPadder或者是stringPadder
+let padder: Padder = getRandomPadder();
+
+if (padder instanceof SpaceRepeatingPadder) {
+    padder;
+}
+
+if (padder instanceof StringPadder ) {
+    padder;
+}
+```
+* instanceof的右侧要求是一个构造函数，ts将细化为：
+   * 如果它的类型不为any的话，此构造函数的prototype属性的类型
+   * 构造签名所返回的类型的联合
+4. 可以为null的类型
+* ts具有两种特殊类型，null和undefined，默认情况下认为，null与undefined可以赋值给任何类型。但是需要去注意的一点就是，当声明一个变量时，不会自动地包含null或undefined。这时，可以使用联合类型来明确的包含它们。
+```
+let s = 'foo';
+s = null; // 报错，null不能赋值给string
+let sn: string | null = "bar";
+sn = null;
+
+sn = undefined; //报错，undefined不能赋值给string | null
+```
+5. 可选参数和可选属性
+* 在可选参数中，可选参数会被自动地加上undefined类型
+```
+function f (x: number, y?: number) {
+    return x + (y || 0);
+}
+console.log(f(1,2));
+console.log(f(1));
+console.log(f(1, undefined));
+console.log(f(1, null));
+```
+* 在下面的可选属性中也同样如此
+```
+class C {
+    public a: number;
+    b?: number;
+    constructor(a:number){
+        this.a = a;
+    }
+}
+let c = new C(1);
+c.a = 12;
+c.a = undefined;
+c.b = 12;
+c.b = undefined;
+c.b = null;
+```
+6. 类型别名
+* 类型别名会给一个类型起新的名字，但是别名有时和接口很像，可以作用于原始值，联合类型，元祖以及其他任何需要手写的类型
+```
+type Name = string;
+type NameResolve = () => string;
+type NameOrResolver = Name | NameResolve;
+function getName(n: NameOrResolver): Name {
+    if (typeof n === 'string'){
+        return n;
+    }else {
+        return n();
+    }
+```
+* 类型别名也可以是泛型
+当其于交叉类型结合时，会创建出一些古怪的类型
+```
+type LiskedList<T> = T & { next: LiskedList<T> }
+
+interface Person {
+    name: string;
+}
+
+type LinkedList<T> = T & { next: LinkedList<T> };
+
+interface Person {
+    name: string;
+}
+
+var people: LinkedList<Person> ;
+var s = people.name;
+var s = people.next.name;
+var s = people.next.next.name;
+var s = people.next.next.next.name;
+```
+7. 可辨识联合
+* 可以合并单例类型，联合类型，类型保护和类型别名来创建和一个叫做可辨识联合的高级模式，被称为标签联合或代数数据类型。
+* 具有的三个特征：
+    * 具有普通的单例类型属性-可辨识的特征
+    * 一个类型别名包含了那些类型的联合
+    * 此属性上的类型保护
+```
+interface Square {
+    kind: "square";
+    size: number;
+}
+
+interface Rectangle {
+    kind: 'rectangle';
+    width: number;
+    height: number;
+}
+interface Circle {
+    kind: 'circle';
+    radius: number;
+}
+
+type Shape = Square | Rectangle | Circle;
+
+function area(s: Shape) {
+    switch(s.kind) {
+        case  "square" : return s.size * s.size;
+        case "rectangle": return s.height * s.width;
+        case "circle": return Math.PI * s.radius ** 2;
+    }
+}
+console.log(area({kind: 'circle',radius: 12}));
+//**即两个乘号就是乘方的意思，如2**4，结果就是16
+```
+8. 多态的this类型
+* 多态的this类型表示的是某个包含类或者是某个包含类或接口的子类型。能很容易的表示连贯接口间的继承
+```
+class BasicCalculator {
+    public constructor(protected value: number = 0){};
+    public currentValue():number {
+        return this.value;
+    }
+    public add(operand: number): this {
+        this.value += operand;
+        return this;
+    }
+    public multiply(operand: number): this {
+        this.value *= operand;
+        return this;
+    }
+}
+```
+* 由于这个类使用了this类型，因此可以继承它，新的类可以直接使用之前的方法，不需要做任何的改变
+```
+class ScientificCaculator extends BasicCalculator {
+    public constructor(value = 0){
+        super(value);
+    }
+
+    public sin(){
+        this.value = Math.sin(this.value);
+        return this;
+    }
+}
+let v = new ScientificCaculator(2)
+        .multiply(5)
+        .sin()
+        .add(1)
+        .currentValue();
+console.log(v)
+```
+9. 索引类型
+* 使用索引类型，编译器就能够检查使用了动态属性名的代码
+* 索引类型查询和索引访问操作符
+```
+function pluck<T, K extends keyof T>(o: T, names: K[]): T[K][]{
+    return names.map(n => o[n]);
+}
+
+interface Person {
+    name: string;
+    age: number;
+}
+let person: Person = {
+    name: 'Jarid',
+    age: 35
+}
+let strings: string[] = pluck(person, ['name']);
+```
+* 索引类型查询操作符：keyof T,含义是对于任何类型T，keyof T的结果为T，如下所示：
+```
+let personProps: keyof Person; // 'name' | 'age'
+```
+* 索引访问操作符：T[K],在这里需要确保类型变量K extends keyof T
+```
+interface Person {
+    name: string;
+    age: number;
+}
+let person: Person = {
+    name: 'Jarid',
+    age: 35
+}
+// let strings: string[] = pluck(person, ['name']);
+
+function getProperty<T, K extends keyof T>(o: T, name: K): T[K] {
+    return o[name];
+}
+let names: string = getProperty(person, 'name');
+let age: number = getProperty(person, 'age');
+```
+* 索引类型和字符串索引签名
+keyof和T[K]与字符串索引签名进行交互。如果有一个带有字符串索引签名的类型，那么keyof T会是string。并且T[string]为索引签名的类型。
+```
+interface Map<T> {
+    [key: string]: T;
+}
+let keys: keyof Map<number> = 'sdd';
+let value: Map<number>['foo'] = 123;
+```
+
+### 映射类型
+* 在映射类型里，新类型以相同的形式去转化旧类型里的每个属性。如：可以令每一个属性都成为readonly类型或者可选的。
+```
+interface Person {
+    name: string;
+    age: number;
+}
+type Readonly<T> = {
+    readonly [P in keyof T]: T[P];
+}
+type Partial<T> = {
+    [P in keyof T]?: T[P];
+}
+
+type PersonPartial = Partial<Person>;
+type ReadonlyPerson = Readonly<Person>;
+```
+* 在上面的这个例子中就将person中的属性转化为了可选和只读这两种方式
+```
+type Keys = 'option1' | 'option2';
+type Flags = { [K in Keys]:boolean };
+进而表现出含义则为
+type Flags = {
+    option1: boolean;
+    option2: boolean;
+}
+```
+* 映射类型的真正应用，常常是基于一些已经存在的类型，且按照一定的方式转化字段。
+```
+//通用方式
+interface Person {
+    name: string;
+    age: number;
+}
+type NullablePerson = { [P in keyof Person]: Person[P] | null};
+type PartialPerson = { [P in keyof Person]?: Person[P]}
+
+//更通用方式
+type Nullable<T> = { [P in keyof T]: T[P] | null};
+type Partials<T> = { [P in keyof T]?: T[P]}
+```
+* 装包的过程
+```
+type Proxy<T> = {
+    get(): T;
+    set(value: T): void;
+}
+type Proxify<T> = {
+    [P in keyof T]: Proxy<T[P]>;
+}
+function proxify<T>(o: T): Proxify<T> {
+
+}
+let proxyProps = proxify(props);
+```
+* 解包的过程
+```
+type Proxy<T> = {
+    get(): T;
+    set(value: T): void;
+}
+type Proxify<T> = {
+    [P in keyof T]: Proxy<T[P]>;
+}
+function unproxify<T>(t: Proxify<T>): T {
+    let result = {} as T;
+    for (const k in t) {
+        result[k] = t[k].get();
+    }
+    return result;
+}
+```
+### 预定义的有条件类型
+* Exclude<T, U>    从T中剔除可以赋值给U的类型
+```
+type T00 = Exclude<"a" | "b" | "c" | "d", "a" | "c" | "f">;  // "b" | "d"
+```
+* Extract<T, U>   提取T中可以赋值给U的类型
+```
+type T01 = Extract<"a" | "b" | "c" | "d", "a" | "c" | "f">;  // "a" | "c"
+```
+* NonNUllable<T>   从T中剔除null和undefined
+```
+type T04 = NonNullable<string | number | undefined>;  // string | number
+```
+* ReturnType<T>   获取函数返回值类型
+```
+type T10 = ReturnType<() => string>;  // string
+type T11 = ReturnType<(s: string) => void>;  // void
+```
+* InstanceType<T> 获取构造函数类型的实例类型
+```
+type T22 = InstanceType<never>;  // any
+type T23 = InstanceType<string>;  // Error
+```
+## 迭代器和生成器
+### 可迭代器
+当一个对象实现了Symbol.iterator属性时，可以认为其是迭代的。如Array, Map, Set等
+1. for...of语句
+* for...of会遍历可迭代的对象，调用对象上的Symbol.iterator方法。
+```
+let someArray = [1, "string", "false"];
+for(let entry of someArray) {
+    console.log(entry);
+}
+```
+2. for..of和for...in
+* 两者之间的区别
+    * in迭代的是对象的键列表，of则迭代对象的值列表
+    * in可操作任何对象，提供的是查找对象属性的一种方法。of关注于迭代对象的值
+## 命名空间
+* 如，当很多的验证器加入时，需要一种手段来组织代码，以便于在记录类型的同时会你不用担心与其它对象产生命名冲突，因此需要把验证器包裹到一个命名空间内，而不用将其放在全局命名空间下
+```
+namespace Validation {
+    export interface StringValidator {
+        isAcceptable(s: string): boolean;
+    }
+
+    const lettersRegexp = /^[A-Za-z]+$/;
+    const numberRegexp = /^[0-9]+$/;
+
+    export class LettersOnlyValidator implements StringValidator {
+        isAcceptable(s:string) {
+            return lettersRegexp.test(s);
+        }
+    }
+
+    export class ZipCodeValidator implements StringValidator {
+        isAcceptable(s: string) {
+            return s.length === 5 && numberRegexp.test(s);
+        }
+    }
+}
+
+let strings = ["hello", "98052", "101"];
+
+let validators: { [s: string]: Validation.StringValidator; } = {};
+validators["ZIP code"] = new Validation.ZipCodeValidator();
+validators["Letters only"] = new Validation.LettersOnlyValidator();
+
+for(let s of strings) {
+    for(let name in validators ){
+        console.log(`"${ s }" - ${ validators[name].isAcceptable(s) ? "matches" : "does not match" } ${ name }`)
+    }
+}
+```
+* 分解到多文件：当应用变得越来越大时，需要将代码分离到不同的文件中以便于维护
+* 多文件中的命名空间： 可以将命名空间分割成多个文件，尽管是不同的文件，但是任然是同一个命名空间，并且在使用时就如同定义在一个文件中一样。各文件之间存在一定的依赖关系，在这里可以引用标签来告述编辑器文件之间的联系。
+* 当涉及到多文件时，必须确保所有编译后的代码都被加载了。
+    * 第一种方式，把所有输入文件编译为一个输出文件，需要使用--outfile标记， tsc --outFile sample.js Test.ts
+    * 第二种方式，可以编译每一个文件，每一个源文件都会对应生成一个js文件，在页面上通过script标签把所有生成的js按照正确的顺序给引进来
+* 别名：给常用的对象取一个短的名字
+    * 在引用时，使用import关键字
+```
+namespace Shapes {
+    export namespace Polygons {
+        export class Triangle { }
+        export class Square { }
+    }
+}
+import polygons = Shapes.Polygons;
+let sq = new polygons.Square(); //给Shapes.Polygons取了一个别名
+```
+* 命名空间和模块的陷进
+1. 对模块使用///reference,应该使用import。在编译器中使用根据import来找到对应的路径，是通过import from或者是import require()，来定位到模板的类型信息
+* 不必要的命名空间
+1. 不应该对模板使用命名空间，使用命名空间是为了提供逻辑分组和避免命名冲突。模块文件本身书一个逻辑分组，并且它的名字是由导入这个模板的代码指定，所以没有必要为导出的对象增加额外的模板层
+```
+export class Triangle {}
+export class Square {}
+
+import * as shapes form "./shapes";
+let t = new shapes.Triangle();
+```

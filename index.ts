@@ -297,9 +297,377 @@ console.log('监控ts');
 // }
 // console.log(Enum.A)
 
-declare enum Enum {
-    A = 1,
-    B,
-    C = 2
-}
+// declare enum Enum {
+//     A = 1,
+//     B,
+//     C = 2
+// }
 // console.log(Enum.B)
+
+// function padLeft(value: string,padding: number | string) {
+//     if (typeof padding == 'number') {
+//         return Array(padding + 1).join(" ") + value;
+//     }
+//     if (typeof padding === "string") {
+//         return padding + value;
+//     }
+//     throw new Error(`Expected string or number, got ${padding} `);
+// }
+// console.log(padLeft("hello word", 123));
+
+// interface Bird {
+//     fly():void;
+//     layEggs():void;
+// }
+
+// interface Fish {
+//     swim(): void;
+//     layEggs(): void;
+// }
+// function getSmakllPet(): Fish | Bird {
+//     //
+// }
+// let pet = getSmakllPet();
+// pet.layEggs(); // okay
+// pet.swim();    // errors
+
+// interface Bird {
+//     fly():void;
+//     layEggs():void;
+// }
+
+// interface Fish {
+//     swim(): void;
+//     layEggs(): void;
+// }
+// function getSmakllPet(): Fish | Bird {
+//     //
+// }
+// let pet = getSmakllPet();
+
+// if ((<Fish>pet).swim) {
+//     (<Fish>pet).swim();
+// }else {
+//     (<Bird>pet).fly();
+// }
+
+// interface Bird {
+//     fly():void;
+//     layEggs():void;
+// }
+
+// interface Fish {
+//     swim(): void;
+//     layEggs(): void;
+// }
+
+// function isFish(pet: Fish | Bird): pet is Fish {
+//     return (<Fish>pet).swim !== undefined;
+// }
+
+// function isNumber(x: any): x is number {
+//     return typeof x === 'number';
+// }
+
+// function isString(y: any): y is string {
+//     return typeof y === 'string';
+// }
+
+// function padLeft(value: string, padding: string | number) {
+//     if (isNumber(padding)) {
+//         return Array(padding + 1).join(" ") + value;
+//     }
+//     if (isString(padding)) {
+//         return padding + value;
+//     }
+//     throw new Error(`Expected string or number, got ${padding} `)
+// }
+
+// interface Padder {
+//     getPaddingString(): string;
+// }
+
+// class SpaceRepeatingPadder implements Padder {
+//     constructor(private numSpaces: number) {}
+//     getPaddingString(){
+//         return Array(this.numSpaces + 1).join(" ");
+//     }
+// }
+
+// class StringPadder implements Padder {
+//     constructor(private value: string) {}
+//     getPaddingString() {
+//         return this.value;
+//     }
+// }
+
+// function getRandomPadder() {
+//     return Math.random() < 0.5 ?
+//     new SpaceRepeatingPadder(4) : 
+//     new StringPadder(" ");
+// }
+
+// //此时为SpaceRepeatingPadder或者是stringPadder
+// let padder: Padder = getRandomPadder();
+
+// if (padder instanceof SpaceRepeatingPadder) {
+//     padder;
+// }
+
+// if (padder instanceof StringPadder ) {
+//     padder;
+// }
+// let s = 'foo';
+// s = null; // 报错，null不能赋值给string
+// let sn: string | null = "bar";
+// sn = null;
+
+// sn = undefined; //报错，undefined不能赋值给string | null
+
+// function f (x: number, y?: number) {
+//     return x + (y || 0);
+// }
+// console.log(f(1,2));
+// console.log(f(1));
+// console.log(f(1, undefined));
+// console.log(f(1, null));
+
+// class C {
+//     public a: number;
+//     b?: number;
+//     constructor(a:number){
+//         this.a = a;
+//     }
+// }
+// let c = new C(1);
+// c.a = 12;
+// c.a = undefined;
+// c.b = 12;
+// c.b = undefined;
+// c.b = null;
+
+//类型别名
+// type Name = string;
+// type NameResolve = () => string;
+// type NameOrResolver = Name | NameResolve;
+// function getName(n: NameOrResolver): Name {
+//     if (typeof n === 'string'){
+//         return n;
+//     }else {
+//         return n();
+//     }
+// }
+
+// type LiskedList<T> = T & { next: LiskedList<T> }
+
+// interface Person {
+//     name: string;
+// }
+
+// type LinkedList<T> = T & { next: LinkedList<T> };
+
+// interface Person {
+//     name: string;
+// }
+
+// var people: LinkedList<Person> ;
+// var s = people.name;
+// var s = people.next.name;
+// var s = people.next.next.name;
+// var s = people.next.next.next.name;
+
+// interface Square {
+//     kind: "square";
+//     size: number;
+// }
+
+// interface Rectangle {
+//     kind: 'rectangle';
+//     width: number;
+//     height: number;
+// }
+// interface Circle {
+//     kind: 'circle';
+//     radius: number;
+// }
+
+// type Shape = Square | Rectangle | Circle;
+
+// function area(s: Shape) {
+//     switch(s.kind) {
+//         case  "square" : return s.size * s.size;
+//         case "rectangle": return s.height * s.width;
+//         case "circle": return Math.PI * s.radius ** 2;
+//     }
+// }
+// console.log(area({kind: 'circle',radius: 12}));
+
+// class BasicCalculator {
+//     public constructor(protected value: number = 0){};
+//     public currentValue():number {
+//         return this.value;
+//     }
+//     public add(operand: number): this {
+//         this.value += operand;
+//         return this;
+//     }
+//     public multiply(operand: number): this {
+//         this.value *= operand;
+//         return this;
+//     }
+// }
+
+// class ScientificCaculator extends BasicCalculator {
+//     public constructor(value = 0){
+//         super(value);
+//     }
+
+//     public sin(){
+//         this.value = Math.sin(this.value);
+//         return this;
+//     }
+// }
+// let v = new ScientificCaculator(2)
+//         .multiply(5)
+//         .sin()
+//         .add(1)
+//         .currentValue();
+// console.log(v)
+
+// function pluck<T, K extends keyof T>(o: T, names: K[]): T[K][]{
+//     return names.map(n => o[n]);
+// }
+
+// interface Person {
+//     name: string;
+//     age: number;
+// }
+// let person: Person = {
+//     name: 'Jarid',
+//     age: 35
+// }
+// // let strings: string[] = pluck(person, ['name']);
+
+// function getProperty<T, K extends keyof T>(o: T, name: K): T[K] {
+//     return o[name];
+// }
+// let names: string = getProperty(person, 'name');
+// let age: number = getProperty(person, 'age');
+
+//索引类型和字符串类型签名
+// interface Map<T> {
+//     [key: string]: T;
+// }
+// let keys: keyof Map<number> = 'sdd';
+// let value: Map<number>['foo'] = 123;
+// console.log(typeof keys,typeof value)
+
+//映射类型
+// interface Person {
+//     name: string;
+//     age: number;
+// }
+// type Readonly<T> = {
+//     readonly [P in keyof T]: T[P];
+// }
+// type Partial<T> = {
+//     [P in keyof T]?: T[P];
+// }
+
+// type PersonPartial = Partial<Person>;
+// type ReadonlyPerson = Readonly<Person>;
+
+//最简单的映射类型和它的组成部分
+// type Keys = 'option1' | 'option2';
+// type Flags = { [K in Keys]:boolean };
+
+//通用方式
+// interface Person {
+//     name: string;
+//     age: number;
+// }
+// type NullablePerson = { [P in keyof Person]: Person[P] | null};
+// type PartialPerson = { [P in keyof Person]?: Person[P]}
+
+//更通用方式
+// type Nullable<T> = { [P in keyof T]: T[P] | null};
+// type Partials<T> = { [P in keyof T]?: T[P]}
+
+
+//装包：
+// type Proxy<T> = {
+//     get(): T;
+//     set(value: T): void;
+// }
+// type Proxify<T> = {
+//     [P in keyof T]: Proxy<T[P]>;
+// }
+// function proxify<T>(o: T): Proxify<T> {
+
+// }
+// let proxyProps = proxify(props);
+
+//解包
+// type Proxy<T> = {
+//     get(): T;
+//     set(value: T): void;
+// }
+// type Proxify<T> = {
+//     [P in keyof T]: Proxy<T[P]>;
+// }
+// function unproxify<T>(t: Proxify<T>): T {
+//     let result = {} as T;
+//     for (const k in t) {
+//         result[k] = t[k].get();
+//     }
+//     return result;
+// }
+
+//for...of语句
+// let someArray = [1, "string", "false"];
+// for(let entry of someArray) {
+//     console.log(entry);
+// }
+
+//使用命名空间的验证器
+// namespace Validation {
+//     export interface StringValidator {
+//         isAcceptable(s: string): boolean;
+//     }
+
+//     const lettersRegexp = /^[A-Za-z]+$/;
+//     const numberRegexp = /^[0-9]+$/;
+
+//     export class LettersOnlyValidator implements StringValidator {
+//         isAcceptable(s:string) {
+//             return lettersRegexp.test(s);
+//         }
+//     }
+
+//     export class ZipCodeValidator implements StringValidator {
+//         isAcceptable(s: string) {
+//             return s.length === 5 && numberRegexp.test(s);
+//         }
+//     }
+// }
+
+// let strings = ["hello", "98052", "101"];
+
+// let validators: { [s: string]: Validation.StringValidator; } = {};
+// validators["ZIP code"] = new Validation.ZipCodeValidator();
+// validators["Letters only"] = new Validation.LettersOnlyValidator();
+
+// for(let s of strings) {
+//     for(let name in validators ){
+//         console.log(`"${ s }" - ${ validators[name].isAcceptable(s) ? "matches" : "does not match" } ${ name }`)
+//     }
+// }
+
+// namespace Shapes {
+//     export namespace Polygons {
+//         export class Triangle { }
+//         export class Square { }
+//     }
+// }
+// import polygons = Shapes.Polygons;
+// let sq = new polygons.Square(); //给Shapes.Polygons取了一个别名
