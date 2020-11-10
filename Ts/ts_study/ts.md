@@ -404,3 +404,307 @@ class Son extends Father implements T {
 const son = new Son('小河');
 son.code();
 ```
+## 泛型
+* 作用： 一个组件可以支持多种类型的数据，这样用户就可以使用自己的数据类型来创建组件
+* any类型与泛型之间的区别，any类型不能对数据类型做约束，泛型则可以对数据类型做约束
+### 泛型函数
+* 注意：泛型类中使用什么样的大写字母都可以，只是习惯上使用T，表示Type的意思
+```
+//any类型
+function returnAny(value: any): any{
+    return value;
+}
+console.log(returnAny('ddkf'));//此时不会对类型有任何的约束
+
+//泛型
+function returnLike<T>(value: T): T {
+    return value;
+}
+console.log(returnLike<string>('123'));
+console.log(returnLike<number>(123));
+```
+### 泛型类
+* 泛型类的定义方式，首先需要在类型去定义泛型类中，然后获得其返回值即可
+```
+class Min<T> {
+    public arr: T[] = [];
+    add(value: T):void {
+        this.arr.push(value);
+    }
+    min():T {
+        let minValue = this.arr[0];
+        for(let i = 0; i < this.arr.length; i++){
+            if(minValue > this.arr[i]){
+                minValue = this.arr[i];
+            }
+        }
+        return minValue;
+    }
+}
+const min = new Min<number>(); //泛型类的实例化
+min.add(3);
+min.add(20);
+min.add(100);
+console.log(min.min());
+const mins = new Min<string>();
+mins.add('v');
+mins.add('a');
+mins.add('z');
+console.log(mins.min())
+```
+```
+class User {
+    username: string | undefined;
+    password: string | undefined;
+}
+
+class MySqlDb <T>{
+    add(info: T):boolean {
+        console.log(info);
+        return true;
+    }
+}
+
+const user = new User();
+user.username = '张三';
+user.password = '123456';
+
+const db = new MySqlDb<User>();
+console.log(db.add('as')); //错误，因为指定了类型
+console.log(db.add(user));
+class Article {
+    title: string;
+    content: string;
+    status: number;
+    constructor(title: string, content: string,status: number){
+        this.title = title;
+        this.content = content;
+        this.status = status;
+    }
+}
+
+const ar = new Article('张三','内容',1);
+const dB = new MySqlDb<Article>();
+console.log(dB.add(ar));
+```
+### 泛型函数接口
+* 泛型接口有两种定义方式：
+1. 第一种定义方式
+```
+interface ConfigFn {
+    <T>(value: T): T;
+}
+
+var config:ConfigFn = function<T>(value: T):T {
+    return value;
+}
+console.log(config<string>('zhang'));
+```
+2. 第二种定义方式
+```
+interface Config<T> {
+    (value: T): T
+}
+function getData<T>(value: T):T {
+    return value;
+}
+const myConfig: Config<string> = getData;
+console.log(myConfig('124'))
+```
+### 泛型 接口 以及类的操作实例
+* 功能： 定义一个操作数据库的库，支持Mysql Mssql MongDb
+* 要求： 所有的数据库功能一样，都有add update delete get方法
+* 注意： 约束统一的规范、以及代码重构
+* 解决方案：需要约束规范，所以要定义接口，需要代码重构所以需要泛型
+    1. 接口：在面向对象的编程中，接口是一种规范的定义，它的行为和动作的规范
+    2. 泛型：解决类 接口 方法的复用性
+```
+interface DBI<T> {
+    add(info: T):boolean;
+    update(info: T,id: number):boolean;
+    delete(id:number):boolean;
+    get(id: number): any[];
+}
+
+//定义可以操作mysql的类
+class Mysql<T> implements DBI<T> {
+    constructor(){
+        console.log('数据库建立');
+    }
+    add(info: T):boolean {
+        console.log(info)
+        return true;
+    }
+    update(info: T, id: number): boolean {
+        throw new Error("Method not implemented.");
+    }
+    delete(id: number): boolean {
+        throw new Error("Method not implemented.");
+    }
+    get(id: number): any[] {
+        throw new Error("Method not implemented.");
+    }
+}
+
+class Mssql<T> implements DBI<T> {
+    constructor(){
+        console.log('数据库建立');
+    }
+    add(info: T):boolean {
+        console.log(info)
+        return true;
+    }
+    update(info: T, id: number): boolean {
+        throw new Error("Method not implemented.");
+    }
+    delete(id: number): boolean {
+        throw new Error("Method not implemented.");
+    }
+    get(id: number): any[] {
+        throw new Error("Method not implemented.");
+    }
+}
+class User {
+    username: string | undefined;
+    password: string | undefined;
+}
+const user = new User();
+user.password='123';
+user.username = '张三';
+const mysql = new Mysql<User>();
+console.log(mysql.add(user))
+```
+### 模块化
+1. 模块：文件之间的引用方式就叫做模块，侧重于代码的复用
+2. 命名空间：内部模块，主要用于组织代码，避免命名冲突
+* 命名空间的实例
+```
+namespace A {
+    interface Animal {
+        name: string;
+        eat():void;
+    }
+
+    export class Dog implements Animal {
+        name: string;
+        constructor(name: string){
+            this.name = name;
+        }
+        eat(){
+            console.log(this.name + '吃饭')
+        }
+    }
+
+    export class Cat implements Animal {
+        name: string;
+        constructor(name: string){
+            this.name = name;
+        }
+        eat(){
+            console.log(this.name + '在唱歌')
+        }
+    }
+}
+
+const dog = new A.Dog('小狗');
+console.log(dog.eat());
+const cat = new A.Cat('小猫');
+console.log(cat.eat())
+```
+### 装饰器
+* 注意：在当前的版本中需要在ts.config中设置experimentalDecorators为true
+* 含义： 装饰器是一种特殊类型的声明，能够被附加到类声明，方法，函数或参数上，可以修改类的行为
+* 通俗理解： 装饰器是一个方法，可以注入到类、方法、属性参数上来扩展类、属性、参数的功能
+* 常见的装饰器：类装饰器、属性装饰器、方法装饰器、参数装饰器
+* 装饰器的写法：普通装饰器(无法传参)、装饰器工厂(可以传递参数)
+1. 类装饰器：装饰器在类声明之前被声明（仅靠着类声明），装饰器应用于类构造函数，可以用来间是，修改或者替换类
+
+```
+//1. 普通装饰器
+function logClass(params: any){
+    console.log(params);
+    //params表示的就是当前类
+    params.prototype.appUrl = "动态扩展属性"
+}
+
+@logClass
+class HttpClient {
+    constructor(){};
+    getData(){}
+}
+const http:any = new HttpClient();
+console.log(http.appUrl)
+```
+```
+//装饰器工厂：可以传递参数
+function logClass(params: any){
+    return function(target: any){
+        console.log(target,params);
+        //此时额target指的是类，params指的是装饰器中传入的参数
+    }
+}
+
+@logClass('hello')
+class HttpClient {
+    constructor(){};
+    getData(){}
+}
+const http:any = new HttpClient();
+console.log(http.appUrl)
+```
+* 类装饰器重构构造函数的例子
+* 描述： 类装饰器表达式会在运行时当作函数被调用，类的构造函数作为唯一的参数，如果类装饰器返回一个值，他会使用提供的构造函数来替换类的声明
+```
+function logClass(params: any){
+    console.log(params);
+    return class extends params {
+        appUrl: any = '我是修改后的数据'
+        getData(){
+            this.apiUrl = this.appUrl+ '---';
+            console.log(this.appUrl);
+        }
+    }
+}
+
+@logClass
+class HttpClient {
+    public apiUrl: string | undefined;
+    constructor(){
+        this.apiUrl = "我是构造函数里得apiUrl"
+    };
+    getData(){
+        console.log(this.apiUrl);
+    }
+}
+const http:any = new HttpClient();
+http.getData()
+```
+* 属性装饰器：属性装饰器表达式会在运行时当作函数被调用，传入下列2个参数
+    * 对于静态成员来说是类的构造函数，对于实例陈成员是类的原型对象
+    * 成员的名字
+```
+function logClass(params: any){
+    return function(target: any) {
+
+    }
+}
+
+function logProperty(params: any){
+    return function(target: any, attr: any){
+        console.log(target, attr);
+        target[attr] = params;
+    }
+}
+    
+@logClass('xxx')
+class HttpClient {
+    @logProperty('abs')
+    public apiUrl: string | undefined;
+    constructor(){};
+    getData(){
+        console.log(this.apiUrl);
+    }
+}
+const http:any = new HttpClient();
+http.getData()
+```

@@ -286,33 +286,288 @@
 // const cat = new Dog('小黑');
 // console.log(cat.eat());
 
-interface M {
-    eat():void;
-}
-interface T extends M {
-    work():void;
+// interface M {
+//     eat():void;
+// }
+// interface T extends M {
+//     work():void;
+// }
+
+// class Father {
+//     name: string;
+//     constructor(name: string) {
+//         this.name = name;
+//     }
+//     code():void{
+//         console.log(this.name + '写代码');
+//     }
+// }
+
+// class Son extends Father implements T {
+//     constructor(name: string){
+//         super(name);
+//     }
+//     eat(){
+//         console.log('eat');
+//     }
+//     work(){
+//         console.log('work');
+//     }
+// }
+// const son = new Son('小河');
+// son.code();
+
+// //any类型
+// function returnAny(value: any): any{
+//     return value;
+// }
+// console.log(returnAny('ddkf'));//此时不会对类型有任何的约束
+
+// //泛型
+// function returnLike<T>(value: T): T {
+//     return value;
+// }
+// console.log(returnLike<string>('123'));
+// console.log(returnLike<number>(123));
+
+//泛型类
+// class Min<T> {
+//     public arr: T[] = [];
+//     add(value: T):void {
+//         this.arr.push(value);
+//     }
+//     min():T {
+//         let minValue = this.arr[0];
+//         for(let i = 0; i < this.arr.length; i++){
+//             if(minValue > this.arr[i]){
+//                 minValue = this.arr[i];
+//             }
+//         }
+//         return minValue;
+//     }
+// }
+// const min = new Min<number>(); //泛型类的实例化
+// min.add(3);
+// min.add(20);
+// min.add(100);
+// console.log(min.min());
+// const mins = new Min<string>();
+// mins.add('v');
+// mins.add('a');
+// mins.add('z');
+// console.log(mins.min())
+// interface ConfigFn {
+//     <T>(value: T): T;
+// }
+
+// var config:ConfigFn = function<T>(value: T):T {
+//     return value;
+// }
+// console.log(config<string>('zhang'));
+
+//第二种定义泛型函数接口的方式
+// interface Config<T> {
+//     (value: T): T
+// }
+// function getData<T>(value: T):T {
+//     return value;
+// }
+// const myConfig: Config<string> = getData;
+// console.log(myConfig('124'))
+// class User {
+//     username: string | undefined;
+//     password: string | undefined;
+// }
+
+// class MySqlDb <T>{
+//     add(info: T):boolean {
+//         console.log(info);
+//         return true;
+//     }
+// }
+
+// const user = new User();
+// user.username = '张三';
+// user.password = '123456';
+
+// const db = new MySqlDb<User>();
+// console.log(db.add('as')); //错误，因为指定了类型
+// console.log(db.add(user));
+// class Article {
+//     title: string;
+//     content: string;
+//     status: number;
+//     constructor(title: string, content: string,status: number){
+//         this.title = title;
+//         this.content = content;
+//         this.status = status;
+//     }
+// }
+
+// const ar = new Article('张三','内容',1);
+// const dB = new MySqlDb<Article>();
+// console.log(dB.add(ar));
+
+// interface DBI<T> {
+//     add(info: T):boolean;
+//     update(info: T,id: number):boolean;
+//     delete(id:number):boolean;
+//     get(id: number): any[];
+// }
+
+// //定义可以操作mysql的类
+// class Mysql<T> implements DBI<T> {
+//     constructor(){
+//         console.log('数据库建立');
+//     }
+//     add(info: T):boolean {
+//         console.log(info)
+//         return true;
+//     }
+//     update(info: T, id: number): boolean {
+//         throw new Error("Method not implemented.");
+//     }
+//     delete(id: number): boolean {
+//         throw new Error("Method not implemented.");
+//     }
+//     get(id: number): any[] {
+//         throw new Error("Method not implemented.");
+//     }
+// }
+
+// class Mssql<T> implements DBI<T> {
+//     constructor(){
+//         console.log('数据库建立');
+//     }
+//     add(info: T):boolean {
+//         console.log(info)
+//         return true;
+//     }
+//     update(info: T, id: number): boolean {
+//         throw new Error("Method not implemented.");
+//     }
+//     delete(id: number): boolean {
+//         throw new Error("Method not implemented.");
+//     }
+//     get(id: number): any[] {
+//         throw new Error("Method not implemented.");
+//     }
+// }
+// class User {
+//     username: string | undefined;
+//     password: string | undefined;
+// }
+// const user = new User();
+// user.password='123';
+// user.username = '张三';
+// const mysql = new Mysql<User>();
+// console.log(mysql.add(user))
+// namespace A {
+//     interface Animal {
+//         name: string;
+//         eat():void;
+//     }
+
+//     export class Dog implements Animal {
+//         name: string;
+//         constructor(name: string){
+//             this.name = name;
+//         }
+//         eat(){
+//             console.log(this.name + '吃饭')
+//         }
+//     }
+
+//     export class Cat implements Animal {
+//         name: string;
+//         constructor(name: string){
+//             this.name = name;
+//         }
+//         eat(){
+//             console.log(this.name + '在唱歌')
+//         }
+//     }
+// }
+
+// const dog = new A.Dog('小狗');
+// console.log(dog.eat());
+// const cat = new A.Cat('小猫');
+// console.log(cat.eat())
+// function logClass(params: any){
+//     console.log(params);
+//     params.prototype.appUrl = "动态扩展属性"
+// }
+
+// @logClass
+// class HttpClient {
+//     constructor(){};
+//     getData(){}
+// }
+// const http:any = new HttpClient();
+// console.log(http.appUrl)
+
+
+// function logClass(params: any){
+//     return function(target: any){
+//         console.log(target,params);
+//         //此时额target指的是类，params指的是装饰器中传入的参数
+//     }
+// }
+
+// @logClass('hello')
+// class HttpClient {
+//     constructor(){};
+//     getData(){}
+// }
+// const http:any = new HttpClient();
+// console.log(http.appUrl)
+
+//类构造函数的重载
+// function logClass(params: any){
+//     console.log(params);
+//     return class extends params {
+//         appUrl: any = '我是修改后的数据'
+//         getData(){
+//             this.apiUrl = this.appUrl+ '---';
+//             console.log(this.appUrl);
+//         }
+//     }
+// }
+
+// @logClass
+// class HttpClient {
+//     public apiUrl: string | undefined;
+//     constructor(){
+//         this.apiUrl = "我是构造函数里得apiUrl"
+//     };
+//     getData(){
+//         console.log(this.apiUrl);
+//     }
+// }
+// const http:any = new HttpClient();
+// http.getData()
+
+function logClass(params: any){
+    return function(target: any) {
+
+    }
 }
 
-class Father {
-    name: string;
-    constructor(name: string) {
-        this.name = name;
-    }
-    code():void{
-        console.log(this.name + '写代码');
+function logProperty(params: any){
+    return function(target: any, attr: any){
+        console.log(target, attr);
+        target[attr] = params;
     }
 }
-
-class Son extends Father implements T {
-    constructor(name: string){
-        super(name);
-    }
-    eat(){
-        console.log('eat');
-    }
-    work(){
-        console.log('work');
+    
+@logClass('xxx')
+class HttpClient {
+    @logProperty('abs')
+    public apiUrl: string | undefined;
+    constructor(){};
+    getData(){
+        console.log(this.apiUrl);
     }
 }
-const son = new Son('小河');
-son.code();
+const http:any = new HttpClient();
+http.getData()
