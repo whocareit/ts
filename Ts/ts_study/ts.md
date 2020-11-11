@@ -708,3 +708,174 @@ class HttpClient {
 const http:any = new HttpClient();
 http.getData()
 ```
+* 方法装饰器：会被应用到方法的属性描述符上，可以用来监视，修改或者是替换方法的定义，方法装饰会在运行时传入下列的3个参数
+    * 对于静态成员来说是类的构造函数，对于实例成员是类的原型对象
+    * 成员的名字
+    * 成员的属性描述符
+```
+//方法装饰器一
+function get(params: any){
+    return function(target: any, methodName: any, desc: any){
+        console.log(target);
+        console.log(methodName);
+        console.log(desc);
+        target.appUrl = "xxxx";
+        target.run = function(){
+            console.log('run')
+        }
+    }
+}
+class HttpClient {
+    public url: any;
+    constructor(){}
+    @get('http://www.baidu.com')
+    getData(){
+        console.log(this.url);
+    }
+}
+const http:any = new HttpClient();
+console.log(http.appUrl);
+http.run();
+```
+```
+//方法装饰器二，覆盖掉原本对象上的方法
+function get(params: any){
+    return function(target: any, methodName: any, desc: any){
+        console.log(target);
+        console.log(methodName);
+        console.log(desc);
+        //修改方法装饰器中的方法，把装饰器方法传入的所有参数修改为string
+
+        //1. 保存当前的方法
+        const oMethod = desc.value;
+        desc.value = function(...args: any[]){
+            args = args.map(item => String(item));
+            console.log(args);
+        }
+    }
+}
+class HttpClient {
+    public url: any;
+    constructor(){}
+    @get('http://www.baidu.com')
+    getData(){
+        console.log("这是构造函数中的getData");
+    }
+}
+const http:any = new HttpClient();
+http.getData('string',123);
+```
+```
+//方法装饰器三，在原本的方法上变更该方法
+function get(params: any){
+    return function(target: any, methodName: any, desc: any){
+        console.log(target);
+        console.log(methodName);
+        console.log(desc);
+        //修改方法装饰器中的方法，把装饰器方法传入的所有参数修改为string
+
+        //1. 保存当前的方法
+        const oMethod = desc.value;
+        desc.value = function(...args: any[]){
+            args = args.map(item => String(item));
+            console.log(args);
+            oMethod.apply(this,args);
+        }
+    }
+}
+class HttpClient {
+    public url: any;
+    constructor(){}
+    @get('http://www.baidu.com')
+    getData(){
+        console.log("这是构造函数中的getData");
+    }
+}
+const http:any = new HttpClient();
+http.getData('string',123);
+```
+* 方法参数装饰器：会在运行时当作函数被调用，可以使用方法参数装饰器为类的原型，增加一些元素数据，传入下列3个参数
+    * 对于静态成员来说是类的构造函数，对于实例成员是类的原型对象
+    * 方法的名字
+    * 参数在函数列表中的索引
+```
+function logParams(params: any){
+    return function(target: any, methodName: any, desc: any){
+        console.log(target);
+        console.log(methodName);
+        console.log(desc);
+        target.apiUrl = params;
+    }
+}
+class HttpClient {
+    public url: any;
+    constructor(){}
+    getData(@logParams("xxxx") uuid: any){
+        console.log(uuid);
+    }
+}
+const http:any = new HttpClient();
+http.getData('123456');
+console.log(http.apiUrl)
+```
+* 装饰器之间的顺序： 属性 》 方法 》 方法参数 》 类 ,如果同时存在就是从后往前
+```
+function logClass1(params: string){
+    return function(target: any){
+        console.log("类装饰器1");
+    }
+}
+function logClass2(params: string){
+    return function(target: any){
+        console.log("类装饰器2");
+    }
+}
+
+function logMethod(params?: string){
+    return function(target: any, attrName: any, desc: any){
+        console.log('方法装饰器');
+    }
+}
+
+function logAttribute(params?: string){
+    return function(target: any, attrName: any){
+        console.log('属性装饰器');
+    }
+}
+
+function logParams1(params?: string){
+    return function(target: any, attrName: any, desc: any){
+        console.log('方法参数装饰器一');
+    }
+}
+
+function logParams2(params?: string){
+    return function(target: any, attrName: any, desc: any){
+        console.log('方法参数装饰器二');
+    }
+}
+@logClass1('xxxx1')
+@logClass2('xxxx2')
+class HttpClient {
+    @logAttribute()
+    public apiUrl: any;
+    constructor(){}
+    @logMethod()
+    getData(){}
+
+    setData(@logParams1() attr1: any, @logParams2() attr2: any){
+
+    }
+}
+
+const http:any = new HttpClient();
+
+//结果
+属性装饰器
+方法装饰器
+方法参数装饰器二
+方法参数装饰器一
+类装饰器2
+类装饰器1
+```
+

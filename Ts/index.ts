@@ -547,27 +547,95 @@
 // const http:any = new HttpClient();
 // http.getData()
 
-function logClass(params: any){
-    return function(target: any) {
+// function logClass(params: any){
+//     return function(target: any) {
 
-    }
-}
+//     }
+// }
 
-function logProperty(params: any){
-    return function(target: any, attr: any){
-        console.log(target, attr);
-        target[attr] = params;
-    }
-}
+// function logProperty(params: any){
+//     return function(target: any, attr: any){
+//         console.log(target, attr);
+//         target[attr] = params;
+//     }
+// }
     
-@logClass('xxx')
-class HttpClient {
-    @logProperty('abs')
-    public apiUrl: string | undefined;
-    constructor(){};
-    getData(){
-        console.log(this.apiUrl);
+// @logClass('xxx')
+// class HttpClient {
+//     @logProperty('abs')
+//     public apiUrl: string | undefined;
+//     constructor(){};
+//     getData(){
+//         console.log(this.apiUrl);
+//     }
+// }
+// const http:any = new HttpClient();
+// http.getData()
+
+// function logParams(params: any){
+//     return function(target: any, methodName: any, desc: any){
+//         console.log(target);
+//         console.log(methodName);
+//         console.log(desc);
+//         target.apiUrl = params;
+//     }
+// }
+// class HttpClient {
+//     public url: any;
+//     constructor(){}
+//     getData(@logParams("xxxx") uuid: any){
+//         console.log(uuid);
+//     }
+// }
+// const http:any = new HttpClient();
+// http.getData('123456');
+// console.log(http.apiUrl)
+function logClass1(params: string){
+    return function(target: any){
+        console.log("类装饰器1");
     }
 }
+function logClass2(params: string){
+    return function(target: any){
+        console.log("类装饰器2");
+    }
+}
+
+function logMethod(params?: string){
+    return function(target: any, attrName: any, desc: any){
+        console.log('方法装饰器');
+    }
+}
+
+function logAttribute(params?: string){
+    return function(target: any, attrName: any){
+        console.log('属性装饰器');
+    }
+}
+
+function logParams1(params?: string){
+    return function(target: any, attrName: any, desc: any){
+        console.log('方法参数装饰器一');
+    }
+}
+
+function logParams2(params?: string){
+    return function(target: any, attrName: any, desc: any){
+        console.log('方法参数装饰器二');
+    }
+}
+@logClass1('xxxx1')
+@logClass2('xxxx2')
+class HttpClient {
+    @logAttribute()
+    public apiUrl: any;
+    constructor(){}
+    @logMethod()
+    getData(){}
+
+    setData(@logParams1() attr1: any, @logParams2() attr2: any){
+
+    }
+}
+
 const http:any = new HttpClient();
-http.getData()
