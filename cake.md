@@ -465,6 +465,55 @@ const BASE_UPLOAD_CONFIG: Partial<UploadProps> = {
     * copy，拷贝内容到剪切板
     * cut，剪贴当前选中的文字并复制到剪贴板
     * contentReadOnly, 通过传入一个布尔类型的参数来使得文档内容具有可编辑性
+7. useRef,返回一个可变的ref对象，其.current属性被初始化为传入的参数(initialValue)。返回的ref对象在组件的整个生命周期内保持不变。
+8. React.ReactNode,可以是ReactElement, ReactFragment,string等，其表示组件的返回值
+9. 定义接口的一些奇怪用法
+  * 首先定义如下所示的接口
+  ```
+  export interface HigherDataTableHandler {
+    getTableData: (page?: number) => void
+    deleteTableData: (record: AllType) => void
+  }
+  ```
+  * 如果只想实现上述接口中的一个方法，就可以采用下面的这种形式
+  ```
+  const getTableDate: HigherDataTableHandle['getTableData'] = (page?: number) => {}
+  ```
+10. type的奇怪用法：在这个例子中，P和R代表泛型，对应的参数，表述如果某个参数有该类型，那么就会具有下其所对应的参数
+  ```
+  type OnGetType<P, R> = {
+  request: (params: P) => Promise<R>
+  paramsFormater: (params: { pageIndex: number; pageSize?: number }) => P
+  resFormater: (
+    response: R,
+  ) => {
+    dataList: AllType[]
+    currentPage: number
+    total: number
+  }
+  onSuccess?: (params: { pageIndex?: number }) => void
+  }
+  ```
+11. object.keys(),方法会返回一个有一个给定对象的自身可枚举属性组成的数组，数组中属性的排列顺序和正常循环遍历该对象时返回的顺序一致
+```
+Object.keys(obj)
+```
+12. useImperativeHandle，可在使用ref时自定义暴露给赋组件的实例值，在大多数情况下，应当避免使用ref这样的命令式代码，useinperativeHandle应该与forwordRef一起使用
+```
+  useImperativeHandle(ref, creareHandle, [deps])
+```
+* ref: 定义curent对象的ref creareHandle：一个函数，返回值是一个对象，即这个ref的current
+* 对象的[deps]：即依赖列表，当监听的依赖发生变化，useImperativeHandle才会重新将组件的属性输出到父组件
+* ref的current属性上，如果为空数组，则不会输出
+13. effect的条件执行，默认情况下，effect会在每一伦组件渲染完成后执行。如果不需要在每次组件更新时都创建新的订阅，而是需要某个值去改变，那么就需要第二个参数。第二个参数的数组内部是一个值，如果使用该值，就需要确保数组中包含了所有外部作用域中会发生变化、并且在effect中使用了该变量。如果传入的是一个空数组effect内部的props和stat就会一直保持初始值。
+14. audio标签，用于嵌入音频内容。可以包含一个或者多个音频资源，本身含有一些事件，pause媒体播放停止，音频播放开始。
+15. mitt用于事件监听。首先需要去注册一个事件，const emitter = mitt(); 
+```
+emitter.on("事件名称", 处理事件)，表示监听该当前时间，如果事件名称为*，则表示监听所有事件。
+emitter.emit("事件名称"，对象)，fire an event
+```
+16. loadsh中的set(A,B),将B的值给A
+17. react中的父子组件传值问题，父组件传入的值可以通过this.props在子组件中给获取到。hook中组件传值的方式，可以理解为函数传值的方式
 ### 量产后台拖拽上传功能实现
 * 包含两部分：文件拖拽上传，以及使用表格展示上传文件的信息
 1. 文件拖拽上传：使用Upload组件中Drgger组件用于拖拽或者是点击上传文件
@@ -513,6 +562,40 @@ const BASE_UPLOAD_CONFIG: Partial<UploadProps> = {
         return uesrCallback(true)
     }
     uesrCallback(false)
-}
+    }
     ```
 2. 列表渲染部分，通过使用antd的table组件，dataSource数据源为fileList，rowKey表示表格行的取值
+### 课程管理详情页面实现逻辑
+该部分功能的实现，主要是通过hook实现，在其页面的结构中主要有下面三个主要的组件来构成，分别为HigherDataTable,CaseDataEditClass,JsonPreview。
+* HigherDataTable实现，该组件的实现主要是通过hook来实现,因此只需要传给该组件所需要的参数，就可以实现该功能，这样可以实现组件的复用，简化执行过程。
+  * getTable，获取到当前table的数据。通过getTableData方法，该方法的参数接口是本身就定义好的，其中对于在该方法中需要使用到的数据进行了类型的封装，包括使用到的方法参数以及返回值都是确定
+  好的。如下所示：
+  ```
+  //方法参数的调用
+  type OnGetType<P, R> = {
+    request: (params: P) => Promise<R>
+    paramsFormater: (params: { pageIndex: number; pageSize?: number }) => P
+    resFormater: (
+      response: R,
+    ) => {
+      dataList: AllType[]
+      currentPage: number
+      total: number
+    }
+    onSuccess?: (params: { pageIndex?: number }) => void
+  }
+
+  //实现该方法时的使用
+  const { request, paramsFormater, resFormater, onSuccess } = onGet
+  ```
+  最后根据定义好的泛型参数，以及方法调用好即可
+  * searchTableData在实现的过程中也是如上所示一样
+  * deleteTable
+  * resetSearch
+  * 暴露给父组件的方法，使其可以调用的方法实现：
+  ```
+  useImperativeHandle(forwordRef, () => {
+    getTableData: (page = pageIndex) => innerGetDate(page);
+  },deleteTableData)
+  ```
+* 
