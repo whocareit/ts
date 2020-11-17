@@ -394,8 +394,50 @@ WATCH_IGNORED=node_modules/(?!(lodash|umi)) umi dev
 * 简洁的配置项
 ## husky
 1. 介绍：对于git操作的保护，对于坏的提交，上传等做一种限制
-
-
+### 核心概念：
+* State: 一个对象，保存整个应用状态
+* View: React组件构成的视图层
+* Action: 一个对象，描述事件
+* connect: 一个函数，绑定state到View
+* dispatch: 一个函数：发送Action到State
+### State和View
+* state是存储数据的地方，收到Action后，会更新数据。View是React组件构建的UI层，从State取数据后，渲染成HTML代码。只要State有变化，View就会自动更新
+* Action 用于描述UI层事件的一个对象
+* connect 是一个函数，绑定State到View，connect方法返回的也是一个react组件，通常被称为容器组件，因为它是原始UI组件的容器，即在外面的一层State。connect方法传入的第一个参数是mapStateToProps函数，该函数会返回一个对象，用与建立state到props的映射关系
+* dispatch 是一个函数方法，用来将Action发送给State
+### Model对象的例子
+* namespace: 当前Model的名称。整个应用的State，由多个小的Model的state以namespace为key合成
+* state：该Model当前的状态，数据保存在这里，直接决定了视图层的输出
+* reducers：Action处理器，处理同步动作，用来算出最新的state
+* effects： Action处理器，处理同步动作
+```
+{
+  namespaces: 'count',
+  state: 0,
+  reducers: {
+    add(state) { return state + 1},
+  },
+  effects: {
+    * addAfterSecond(action, { call, put }) {
+      yield call(delay, 1000);
+      yield put({type: 'add'});
+    }
+  }
+}
+```
+* dispatch中的type如何对应到Model中，namaspaces：“名字”， reducer中的方法名字： “方法名字”，之后在用dispatch匹配type时，type为'名字/方法名字',即可去匹配到reducer中的方法
+### Effect
+* 被称之为副作用，在应用中，最常见的就是异步操作，来自于函数编程概念，之所以是叫副作用是因为其使得函数变得不纯，同样的输入不一定能够得到同一样的输出
+* 是action处理器，处理异步动作，基于redux-saga实现。典型的用法就是用于做I/O操作、数据库读写
+* call和put： dva提供多个effect函数内部的处理函数，比较常用的是call和put
+  * call： 执行异步函数
+  * put： 发出一个action，类似于dispatch
+```
+function *addAfterSecond(action, {put, call}) {
+  yield call(delay, 1000);
+  yield put({type: 'add});
+}
+```
 # 量产后台
 ## umi只中常用文件配置
 ### .umirc.ts中的defineConfig对象中的配置项
@@ -514,6 +556,21 @@ emitter.emit("事件名称"，对象)，fire an event
 ```
 16. loadsh中的set(A,B),将B的值给A
 17. react中的父子组件传值问题，父组件传入的值可以通过this.props在子组件中给获取到。hook中组件传值的方式，可以理解为函数传值的方式
+18. 在子组件中使用super关键字，如在下面的这个例子中，在子组件的componentDidMount中使用super.componentDidMount。这样的原因是因为当子组件调用
+时，同时也能够使得父组件在此时被调用
+```
+  componentDidMount() {
+    super.componentDidMount();
+  }
+```
+19. ReactJosn组件，该组件是来自于react-json-view这个插件，运用这个组件，就可以将json数据给展示出
+  * src 指定的json对象 指定数据的来源
+  * theme 类型为指定的字符串 表示列表所支持的主题样式
+  * indentWidth 类型为数字 表示缩进的宽度
+  * collapsed 类型为布尔值  表示是否要展示所有的节点
+  * displayObjectSize 类型为布尔值 表示当前的对象或者数组是否要显示其大小
+  * displayDataTypes 当设置为true时，数据类型标签的前缀值展示
+20. 可选链操作符(?.)允许读取位于连接对象链深处的属性的值，而不必明确验证链中的每个引用是否有效。与.运算符类似，但是不同之处在于，当引用为空的情况下，不会引起错误，该表达式短路返回值是undefined，与函数调用一起使用时，如果给定的函数不存在，则返回undefined
 ### 量产后台拖拽上传功能实现
 * 包含两部分：文件拖拽上传，以及使用表格展示上传文件的信息
 1. 文件拖拽上传：使用Upload组件中Drgger组件用于拖拽或者是点击上传文件
