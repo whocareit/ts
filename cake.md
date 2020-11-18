@@ -438,9 +438,159 @@ function *addAfterSecond(action, {put, call}) {
   yield put({type: 'add});
 }
 ```
-# 量产后台
-## umi只中常用文件配置
-### .umirc.ts中的defineConfig对象中的配置项
+## redux-saga
+* 作用：是一个用于管理应用程序side effect（副作用，例如异步获取数据，访问浏览器缓存等）的library，它的目标是让副作用管理更容易，执行效率更高，测试更加简单，在处理故障时更加的容易。redux-saga使用了es6中的Generator功能，让异步的流程更加容易的读取，写入和测试。
+* 安装方式： npm install --save redux-saga或者使用yarn add redux-saga
+### saga辅助函数
+redux-saga提供了一下辅助函数，包装了一些内部方法，用来在一些特定的action被发起到Store时派生任务
+* takeEvery，其提供了类似redux-thunk的行为，其允许多个请求实例同时启动。在某个特定时刻，尽管之前还有一个或者多个请求没有结束，还是可以启动一个新的请求任务
+* takeLatest,在任何时刻takeLatest只允许一个请求任务只执行，并且这个任务是最后被启动的那个
+### 声明式Effect
+* effect是一个简单的对象，这个对象包含了一些给middleware解释执行的信息，可以把Effect看作是一个发送给middleware的指令以执行某些操作（调用某些异步函数，发送一个action到store中，等等）
+* sagas可以多种形式yield Effect，最简单的方式是yield一个Promise
+* call(fn, ...args)这个函数，这个函数不立即执行异步的调用，相反，call创建了一条描述结果的信息。call创建一个纯文本对象描述函数调用。redux-saga middleware确保执行函数调用并在响应被resolve时恢复generator。call同样支持调用对象方法
+```
+yield call([obj, obj.method],arg1,arg2,...)
+yield apply(obj, obj.method, [args1, arg2,...])
+```
+* call和apply都非常适合返回Promise结果的函数，另外一个函数cps可以用来处理Node风格的函数
+### 发送action到store中
+* 需要创建一个对象来只是middleware，来发起一些action，然后让middleware执行真实的dispatch，在redux-saga中提供了一个put函数，这个函数用于创建dispatch Effect
+### 错误处理
+* 通常采用try/catch语法在saga中捕获错误
+### Effect
+概述来说，就是从saga内触发异步操作(side Effect)总是由yield一些声明式的Effect来完成。一个saga所做的实际上是组合那些所有的effect，共同实现所需要的控制流。最简单的例子是个直接把yield一个接一个地放置来对序列化yield Effect中
+### 监听未来的action
+* tekeEvery effect以在每个action开到时派生一个新的任务。在现实情况中，takeEvery只是一个在强大的低阶api之上构建的wrapper effect。
+* take，它创建另一个命令对象，告诉middleware等待一个特定的action。与call effect中的情况一样，middleware会暂停Generator，直到返回的Promise被resoleve。在take的情况下，他会暂停generator直到一个匹配的action被发起。使用take组织代码有一个问题，在takeevery的情况中，被调用的任务无法控制何时被调用，它们将在每次action被匹配时一遍又一遍的调用。并且无法控制每次迭代阻塞以action发起
+### 同时执行多个任务
+yield指令可以很简单的将异步控制流以同步的写法表现出来，与此同时将会需要同时执行多个任务，具体写法如下
+```
+import { call } from 'redux-saga/effects';
+
+const [users, repos ] = yield [
+  call(fetch, '/users')
+  call(fetch, '/repos')
+]
+```
+### 多个Effects之间启动race
+* 当需要同时启动多个任务，又不想等待所有任务完成，只希望拿到winer：即第一个被resolve（或reject）的任务，race Effect提供了一个方法，在多个Effects之间触发一个race
+* race的另一个有用的功能是，会自动取消那些失败的Effects，例如，假设有两个ui按钮：
+  * 第一个用于在后台启动一个任务，这个任务行为在无限循环的while(true)中（例如： 每x秒钟从服务器上同步一些数据）
+  * 一旦后台任务启动了，就启用第二个按钮
+```
+import { race, call, put } from 'redux-saga/effects';
+import { delay } from 'redux-saga'
+
+function* fetchPostWithTimeout() {
+  const[ posts, timeout ] = yield race({
+    posts: call(fetchApi, '/posts')
+    timeout: call(delay, 1000)
+  })
+}
+
+if (posts) {
+  put({type: 'POSTS_RECEVIED', posts})
+} else {
+  put({ type: 'TIMEOUT_ERROR'})
+}
+```
+### 使用yield* 对saga进行排序
+* 可以使用内置的yield* 操作符来组合多个Sagas，使得它们保持顺序，这能带来以后这个一种简单的程序风格来排列宏观任务(macro-task)
+```
+function* playLevelOne() { ... }
+
+function* playLevelTwo() { ... }
+
+function* playLevelThree() { ... }
+
+function* game() {
+  const score1 = yield* playLevelOne()
+  yield put(showScore(score1))
+
+  const score2 = yield* playLevelTwo()
+  yield put(showScore(score2))
+
+  const score3 = yield* playLevelThree()
+  yield put(showScore(score3))
+}
+```
+### 组合Sagas
+* 组合Sagas的惯用方式是使用yields* 但是这个方法有一定的局限性
+  * 如果想要单独测试嵌套的Generator，导致一些重复的测试代码及重复执行的开销。不希望执行一个嵌套的Generator，而仅仅是想确认它是被传入正确的参数来调用
+  * yield* 只允许任务的顺序组合，所以一次只能yield* 一个Generator
+* 因此在组合saga时，可以直接使用yield来并行地启动一个或多个子任务。当yield一个call至generator，Saga将等待Generator处理结束，然后以返回的值恢复执行（或错误从子任务中传播过来，则抛出异常）
+```
+function* fetchPosts() {
+  yield put( actions.requestPosts() )
+  const products = yield call(fetchApi, '/products')
+  yield put( actions.receivePosts(products) )
+}
+
+function* watchFetch() {
+  while ( yield take(FETCH_POSTS) ) {
+    yield call(fetchPosts) // 等待 fetchPosts 完成
+  }
+}
+```
+* yield一个队列的嵌套的generator，将同时启动这些子Generator(sub-generator),并等待它们完成，然后以所有返回的结果恢复执行
+
+### 取消任务
+* fork：创建一个新的进程或者线程，并发送请求，与call的区别在于fork用在非阻塞进程中，call用在阻塞的进程当中
+* 一旦任务被fork调用，可以调用yield cancel(task)来中止任务执行，取消正在运行的任务
+
+### redux-saga中的fork model
+在redux-saga的世界中，可以使用2个Effects在后台动态地fork task
+* fork用来创建attached forks
+* spawn 用来创建detached forks
+#### Attached forks（using fork）
+Attached forks通过一下的规则继续附加在他们的parent
+结论： 
+  * Saga只会在这之后终止：
+    * 他将终止自己的指令
+    * 所有附加的forks本身被终止
+```
+import { delay } from 'redux-saga'
+import { fork, call, put } from 'redux-saga/effects'
+import api from './somewhere/api' // app specific
+import { receiveData } from './somewhere/actions' // app specific
+
+function* fetchAll() {
+  const task1 = yield fork(fetchResource, 'users')
+  const task2 = yield fork(fetchResource, 'comments')
+  yield call(delay, 1000)
+}
+
+function* fetchResource(resource) {
+  const {data} = yield call(api.fetch, resource)
+  yield put(receiveData(data))
+}
+
+function* main() {
+  yield call(fetchAll)
+}
+```
+call(fetchAll)将会在这之后终止：
+* fetchAll本身终止了，这意味着3个effect都会被执行。由于fork effects是非阻塞的，task将被阻塞在call(delay, 1000)
+* 这2个被fork的task终止，意思是在fetch所需的资源之后放入对应的receiveData Action
+### 并发
+* 使用takeEvery可以让多个saga任务并行被fork执行
+```
+import {fork, take} from "redux-saga/effects"
+
+const takeEvery = (pattern, saga, ...args) => fork(function*() {
+  while (true) {
+    const action = yield take(pattern)
+    yield fork(saga, ...args.concat(action))
+  }
+})
+```
+* takeLatest,不允许多个saga任务并行地值ing，一旦收到新的发起的action，它就会取消前面所有fork过的任务(如果这些任务还在执行的话)
+
+
+## 量产后台
+### umi只中常用文件配置
+#### .umirc.ts中的defineConfig对象中的配置项
 * routes，该类型需要为IRoute[]类型,通常在定义时，需要重新定义配置项，然后再放在配置项中
 ```
 const routes: IRoute[] = [{
@@ -571,6 +721,7 @@ emitter.emit("事件名称"，对象)，fire an event
   * displayObjectSize 类型为布尔值 表示当前的对象或者数组是否要显示其大小
   * displayDataTypes 当设置为true时，数据类型标签的前缀值展示
 20. 可选链操作符(?.)允许读取位于连接对象链深处的属性的值，而不必明确验证链中的每个引用是否有效。与.运算符类似，但是不同之处在于，当引用为空的情况下，不会引起错误，该表达式短路返回值是undefined，与函数调用一起使用时，如果给定的函数不存在，则返回undefined
+21. redux-thunk使得action可以接受一个函数
 ### 量产后台拖拽上传功能实现
 * 包含两部分：文件拖拽上传，以及使用表格展示上传文件的信息
 1. 文件拖拽上传：使用Upload组件中Drgger组件用于拖拽或者是点击上传文件
