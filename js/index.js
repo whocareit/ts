@@ -575,3 +575,67 @@ console.log('监控ts');
 // }
 // import polygons = Shapes.Polygons;
 // let sq = new polygons.Square(); //给Shapes.Polygons取了一个别名
+function mapToProps(_ref) {
+    var caseEdit = _ref.caseEdit;
+    return {
+        caseData: caseEdit.caseData,
+        caseTemplate: caseEdit.caseTemplate,
+    }
+}
+
+function newToProps(_ref) {
+    var drag = _ref.drag;
+    return {
+        itemMap: drag.itemMap,
+        activeKey: drag.activeKey,
+    };
+}
+
+
+function getResult(fn1, fn2, params){
+    
+}
+
+// {
+//     caseData: caseEdit.caseData,
+//     caseTemplate: caseEdit.caseTemplate,
+//     itemMap: drag.itemMap,
+//     activeKey: drag.activeKey
+// }
+var result1 = {
+    caseEdit: {
+        caseData: 1,
+        caseTemplate: 2
+    }
+}
+var result2 = {
+    drag: {
+        itemMap: 1,
+        activeKey: 2
+    }
+}
+console.log(getResult(mapToProps, newToProps));
+
+// console.log(mapToProps(result1))
+
+// class Person{
+//     static name = 1
+    
+//     getResult(){
+//         console.log(Person.name, Person.init)
+//     }
+// }
+// Person.name = '123'
+// const person = new Person();
+// // console.log(person.getResult())
+// Person.init = 1233746783;
+// // console.log(Person.init)
+// class B {
+//     static init;
+//     getResult(){
+//         B.init = Person.init;
+//         console.log(B.init)
+//     }
+// }
+// const b = new B();
+// b.getResult()

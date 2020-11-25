@@ -806,4 +806,9 @@ emitter.emit("事件名称"，对象)，fire an event
     getTableData: (page = pageIndex) => innerGetDate(page);
   },deleteTableData)
   ```
-* 
+### 整个量产平台的优化点
+* 使用高阶组件去封装base_extend_class这个组件
+* 该高阶组件可以满足二次封装
+* 在调用使用高阶组件的组件时，可以将一些关键的初始值给设置在redux中，去完成组件之间的数据共享
+### 优化思路：
+1. 初始值设定，将

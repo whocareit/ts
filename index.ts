@@ -671,3 +671,93 @@ console.log('监控ts');
 // }
 // import polygons = Shapes.Polygons;
 // let sq = new polygons.Square(); //给Shapes.Polygons取了一个别名
+
+
+//compose封装
+// function compose<F1,F2>(func1: (param1: ConnectReduxType) => F1, func2: (param2: ConnectReduxType) => F2) { 
+//     return (params: ConnectReduxType) => ({...func1(params),...func2(params)})
+//   }
+
+
+//case edit model
+// setReduxValue(state,params) {
+//     const initValue = params.values;
+//     return {...state,...initValue}
+//   },
+
+//case_data_edit_class
+//1. 需要使用connect来连接生成props
+//2. 在initPage中去dispatch
+// const { caseData,caseTemplate,dispatch } = this.props
+//     const action: CaseEditAction = {
+//       type: "caseEdit/setReduxValue",
+//       values: {
+//         caseData,
+//         caseTemplate
+//       }
+//     }
+//     dispatch(action)
+
+
+//
+// import { connect } from "dva"
+// import React, { Component, ComponentType } from 'react'
+
+// import { ConnectReduxType  } from '@/typings/model'
+// import { AllType } from '@/typings/base'
+
+// type BasePropsType = ReturnType<typeof mapToProps> & {
+//   initState?: AllType;
+// }
+
+// const mapToProps = (  { caseEdit }: ConnectReduxType )=> {    
+//   return {
+//     caseData: caseEdit.caseData,
+//     caseTemplate: caseEdit.caseTemplate,
+//   }
+// }
+
+// //两个参数，第一个参数传递组件值，第二个参数传递mapStateToProps
+// export const withDataTpl =<P extends BasePropsType,S> (Comp: ComponentType<P>, MapConnect?: S) => {
+ 
+
+//   let newMapProps;
+
+//   if(MapConnect){
+//     newMapProps = compose(MapConnect, mapToProps)
+//   }else{
+//     newMapProps = mapToProps;
+//   }
+ 
+
+//   type HocPropsType = P & S
+  
+//   return connect(newMapProps)(
+//     class Hoc extends Component<HocPropsType> {
+//         constructor(props){
+//           super(props)
+          
+//         }      
+//         render() {
+//             return <Comp {...this.props}/>
+//         }
+//     },
+//   )
+// }
+
+
+// function compose(func, map) {
+//   return (params: ConnectReduxType) => (
+//     Object.assign(map(params), func(params))
+//   )
+// }
+ 
+
+
+//设置初始值方式
+//在base_extend_class中设置静态属性，
+
+// constructor(props) {
+//     super(props)
+//     this.state = UserEditExtendClass.initState
+//   }
